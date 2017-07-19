@@ -2,10 +2,6 @@ html {
   background-color: black;
 }
 
-html body #root .App {
-  background-color: black;
-}
-
 table {
     border-collapse: collapse;
 }
@@ -23,4 +19,8 @@ table {
 .room {
   background-color: white;
   opacity: 1;
+}
+
+#notice {
+  color: white;
 }

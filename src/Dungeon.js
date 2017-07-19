@@ -105,6 +105,10 @@ class Dungeon extends Component {
   render () {
     return (
       <div id="dungeon">
+        <div id="notice">
+          <h2> ReactJS Roguelike Dungeon Crawler </h2>
+          <p> This is a work in progress. </p>
+        </div>
         <table>
           { this.state.cells }
         </table>
