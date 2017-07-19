@@ -4,7 +4,8 @@ class Cell extends Component {
     render () {
       var cellClass = "cell " + this.props.type;
       return (
-        <td className={cellClass} id={this.props.id}></td>
+        <td className={cellClass} id={this.props.id} style={this.props.styles}>
+        </td>
       );
     }
 }
@@ -35,7 +36,7 @@ class Dungeon extends Component {
   }
 
   componentDidMount() {
-    var rooms = this.generateRooms(5);
+    var rooms = this.generateRooms(1);
     var cellTypes = this.placeRooms(rooms);
     var cells = this.generateGrid(10000, cellTypes);
   }
@@ -45,7 +46,14 @@ class Dungeon extends Component {
     for(var i = 0; i < size; i += 100) {
       var row = [];
       for(var j = 0; j < 100; j++) {
-        row.push(<Cell id={i + j} type={cellTypes[i + j]} />);
+        var styles = {opacity: Math.random()};
+        if(styles.opacity < 0.2) {
+          styles.opacity += 0.2;
+        }
+        if(cellTypes[i + j] === "room") {
+          styles.opacity = 1;
+        }
+        row.push(<Cell id={i + j} type={cellTypes[i + j]} styles={styles}/>);
       }
       cells.push(<tr> {row} </tr>);
     }
@@ -59,20 +67,20 @@ class Dungeon extends Component {
   generateRooms(num) {
       var rooms = [];
       for(var i = 0; i < num; i++) {
-        var height = this.getHeight(50);
-        var width = this.getWidth(50);
         var point = this.getRandomPoint(this.state.gridSize);
+        var height = this.getHeight(100 - (point[0] % 100));
+        var width = this.getWidth(100 - (point[0] % 100));
         rooms.push(new Room(height, width, point));
       }
       return rooms;
   }
 
   getWidth(maxSize) {
-    return Math.floor(Math.random() * maxSize) + 5;
+    return Math.floor(Math.random() * maxSize);
   }
 
   getHeight(maxSize) {
-    return Math.floor(Math.random() * maxSize) + 5;
+    return Math.floor(Math.random() * maxSize);
   }
 
   getRandomPoint(gridSize) {
