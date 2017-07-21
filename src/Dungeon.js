@@ -4,7 +4,7 @@ class Cell extends Component {
     render () {
       var cellClass = "cell " + this.props.type;
       return (
-        <td className={cellClass} id={this.props.id} style={this.props.styles}>
+        <td className={cellClass} id={[this.props.x,this.props.y]} style={this.props.styles}>
         </td>
       );
     }
@@ -26,55 +26,35 @@ class Dungeon extends Component {
       this.getHeight = this.getHeight.bind(this);
       this.getWidth = this.getWidth.bind(this);
       this.getRandomPoint = this.getRandomPoint.bind(this);
-      this.overlaps = this.overlaps.bind(this);
-      this.placeRooms = this.placeRooms.bind(this);
-      this.removeOverlappingRooms = this.removeOverlappingRooms.bind(this);
+      this.partition = this.partition.bind(this);
 
       this.state = {
-        gridSize: 10000,
-        cellTypes: Array(10000).fill("wall"),
-        cells: []
+        cellTypes: Array(100).fill(Array(100).fill("wall")),
+        cells: [],
+        height: 100,
+        width: 100
       };
   }
 
   componentDidMount() {
-    var rooms = this.generateRooms(20);
-    var cellTypes = this.placeRooms(rooms);
-    var cells = this.generateGrid(10000, cellTypes);
+    var cells = this.generateGrid(10000, this.state.cellTypes);
   }
 
   generateGrid(size, cellTypes) {
     var cells = [];
-    for(var i = 0; i < size; i += 100) {
+    for(var y = 0; y < this.state.height; y++) {
       var row = [];
-      for(var j = 0; j < 100; j++) {
+      for(var x = 0; x < this.state.width; x++) {
         var styles = {opacity: Math.random()};
-        if(styles.opacity < 0.2) {
-          styles.opacity += 0.2;
-        }
-        if(cellTypes[i + j] === "room") {
-          styles.opacity = 1;
-        }
-        row.push(<Cell id={i + j} type={cellTypes[i + j]} styles={styles}/>);
+        row.push(<Cell key={x} x={x} y={y} type={cellTypes[y][x]} styles={styles} />);
       }
-      cells.push(<tr> {row} </tr>);
+      cells.push(<tr key={y}>{row}</tr>);
     }
 
     this.setState({
       cells: cells,
       cellTypes: cellTypes
     });
-  }
-
-  generateRooms(num) {
-      var rooms = [];
-      for(var i = 0; i < num; i++) {
-        var point = this.getRandomPoint(this.state.gridSize);
-        var height = this.getHeight(Math.min(100 - (point[0] % 100), 50));
-        var width = this.getWidth(Math.min(100 - (point[0] % 100), 50));
-        rooms.push(new Room(height, width, point));
-      }
-      return rooms;
   }
 
   getWidth(maxSize) {
@@ -91,44 +71,14 @@ class Dungeon extends Component {
     return [x,y];
   }
 
-  overlaps(roomA, roomB) {
-      var toRight = roomA.point[0] + roomA.width < roomB.point[0];
-      var toLeft = roomA.point[0] > roomB.point[0] + roomB.width;
-      var above = roomA.point[1] > roomB.point[1] + roomB.height;
-      var below = roomA.point[1] + roomA.height < roomB.height;
-      return !(toRight || toLeft || above || below);
-  }
+  partition(numRooms, height, width) {
+    //TO DO
+    var horizontal = Math.random() > 0.5 ? true : false;
+    var maxSplit = horizontal ? width * 0.75 : height * 0.75;
+    var minSplit = horizontal ? width * 0.25 : height * 0.25;
+    var splitAt = Math.floor((Math.random() * (maxSplit - minSplit)) + minSplit);
 
-  placeRooms(rooms) {
-    var cellTypes = this.state.cellTypes;
-    rooms = this.removeOverlappingRooms(rooms);
-    for(var i = 0; i < rooms.length; i++) {
-      var currRoom = rooms[i];
-      var firstPoint = currRoom.point[0] + (currRoom.point[1] * 100);
-      for(var j = firstPoint; j < firstPoint + (currRoom.height * 100); j += 100) {
-        for(var k = j; k < j + currRoom.width; k++) {
-          cellTypes[k] = "room";
-        }
-      }
-    }
-    return cellTypes;
-  }
-
-  removeOverlappingRooms(rooms) {
-      var newRooms = [];
-      var overlapCount = new Array(rooms.length).fill(0);
-      for(var i = 0; i < rooms.length; i++) {
-        if(!overlapCount[i]) {
-          newRooms.push(rooms[i]);
-          for(var j = i + 1; j < rooms.length; j++) {
-            if(this.overlaps(rooms[i], rooms[j])) {
-              overlapCount[j] += 1;
-            }
-          }
-        }
-      }
-
-      return newRooms;
+    throw "TO DO";
   }
 
   render () {
@@ -139,7 +89,9 @@ class Dungeon extends Component {
           <p> This is a work in progress. </p>
         </div>
         <table>
-          { this.state.cells }
+          <tbody>
+            { this.state.cells }
+          </tbody>
         </table>
       </div>
     );
