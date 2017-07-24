@@ -1,5 +1,6 @@
 html {
   background-color: black;
+  color: white;
 }
 
 table {
@@ -21,6 +22,6 @@ table {
   opacity: 1;
 }
 
-#notice {
-  color: white;
+#menu {
+  text-align: left;
 }
