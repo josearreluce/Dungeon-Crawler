@@ -21,7 +21,7 @@ class Room {
 
 class Partition {
   constructor(height, width, x ,y) {
-    const MIN_SIZE = 25;
+    const MIN_SIZE = 5;
 
     this.height = height;
     this.width = width;
@@ -75,20 +75,31 @@ class Partition {
 
     return true;
   }
+
+  verifySize() {
+    return this.height >= this.minSize &&
+          this.width >= this.minSize;
+  }
 }
 
 class Dungeon extends Component {
   constructor () {
       super();
 
+      this.drawPartition = this.drawPartition.bind(this);
       this.generateGrid = this.generateGrid.bind(this);
       this.getHeight = this.getHeight.bind(this);
       this.getWidth = this.getWidth.bind(this);
       this.getRandomPoint = this.getRandomPoint.bind(this);
       this.partition = this.partition.bind(this);
 
+      var cellTypes = [];
+      for(var i = 0; i < 100; i++) {
+        cellTypes.push(new Array(100).fill("wall"));
+      }
+
       this.state = {
-        cellTypes: Array(100).fill(Array(100).fill("wall")),
+        cellTypes: cellTypes,
         cells: [],
         height: 100,
         width: 100
@@ -97,7 +108,30 @@ class Dungeon extends Component {
 
   componentDidMount() {
     var partitions = this.partition(12,100,100);
-    var cells = this.generateGrid(10000, this.state.cellTypes);
+    var cellTypes = this.drawPartition(partitions);
+    var cells = this.generateGrid(10000, cellTypes);
+  }
+
+  drawPartition(partitions) {
+    //TO DO: remove none leaf nodes
+    var cellTypes = this.state.cellTypes;
+
+    for(var i = 0; i < partitions.length; i++) {
+      var p = partitions[i];
+      for(var y = p.y; y < p.y + p.height; y++) {
+        for(var x = p.x; x < p.x + p.width; x++) {
+          if(y === p.y || y === p.y + p.height - 1) {
+            cellTypes[y][x] = "room";
+          } else {
+            if(x === p.x || x === p.x + p.width - 1) {
+              cellTypes[y][x] = "room";
+            }
+          }
+        }
+      }
+    }
+
+    return cellTypes;
   }
 
   generateGrid(size, cellTypes) {
@@ -105,7 +139,7 @@ class Dungeon extends Component {
     for(var y = 0; y < this.state.height; y++) {
       var row = [];
       for(var x = 0; x < this.state.width; x++) {
-        var styles = {opacity: Math.random()};
+        var styles = {opacity: 1};
         row.push(<Cell key={x} x={x} y={y} type={cellTypes[y][x]} styles={styles} />);
       }
       cells.push(<tr key={y}>{row}</tr>);
@@ -134,7 +168,34 @@ class Dungeon extends Component {
   partition(numRooms, height, width) {
     var root = new Partition(height, width, 0, 0);
     var partitions = [];
-    //Build tree structure
+    partitions.push(root);
+
+    var count = 0;
+    while(true) {
+      var length = partitions.length;
+      if(length > 100) {
+        break;
+      }
+
+        partitions[count].split();
+        if(partitions[count].lchild &&
+           partitions[count].verifySize()) {
+          partitions.push(partitions[count].lchild);
+        }
+
+        if(partitions[count].rchild &&
+           partitions[count].verifySize()) {
+          partitions.push(partitions[count].rchild)
+        }
+
+        if(partitions.length === length) {
+          break;
+        }
+
+        count += 1;
+    }
+    console.log(partitions);
+    return partitions;
   }
 
   render () {
