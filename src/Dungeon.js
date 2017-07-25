@@ -12,16 +12,17 @@ class Cell extends Component {
 }
 
 class Room {
-    constructor(height, width, point) {
+    constructor(height, width, x, y) {
       this.height = height;
       this.width = width;
-      this.point = point;
+      this.x = x;
+      this.y = y;
     }
 }
 
 class Partition {
   constructor(height, width, x ,y) {
-    const MIN_SIZE = 5;
+    const MIN_SIZE = 10;
 
     this.height = height;
     this.width = width;
@@ -42,6 +43,22 @@ class Partition {
     }
 
     return horizontal;
+  }
+
+  generateRoom() {
+    var maxX = this.x + this.width - 5;
+    var maxY = this.y + this.height - 5;
+    var x = Math.floor(Math.random() * (maxX - this.x) + this.x);
+    var y = Math.floor(Math.random() * (maxY - this.y) + this.y);
+    var maxHeight = this.height - (y - this.y + 1);
+    var minHeight = 5;
+
+    var maxWidth = this.width - (x - this.x + 1);
+    var minWidth = 5;
+
+    var height = Math.floor(Math.random() * (maxHeight - minHeight) + minHeight);
+    var width = Math.floor(Math.random() * (maxWidth - minWidth) + minWidth);
+    this.room = new Room(height, width, x, y);
   }
 
   split() {
@@ -86,6 +103,7 @@ class Dungeon extends Component {
   constructor () {
       super();
 
+      this.cleanPartitions = this.cleanPartitions.bind(this);
       this.drawPartition = this.drawPartition.bind(this);
       this.generateGrid = this.generateGrid.bind(this);
       this.getHeight = this.getHeight.bind(this);
@@ -108,8 +126,20 @@ class Dungeon extends Component {
 
   componentDidMount() {
     var partitions = this.partition(12,100,100);
+    partitions = this.cleanPartitions(partitions);
     var cellTypes = this.drawPartition(partitions);
     var cells = this.generateGrid(10000, cellTypes);
+  }
+
+  cleanPartitions(partitions) {
+    var leafNodes = [];
+    for(var i = 0; i < partitions.length; i++) {
+      if(!partitions[i].lchild && !partitions[i].rchild) {
+        leafNodes.push(partitions[i]);
+      }
+    }
+
+    return leafNodes;
   }
 
   drawPartition(partitions) {
@@ -121,14 +151,17 @@ class Dungeon extends Component {
       for(var y = p.y; y < p.y + p.height; y++) {
         for(var x = p.x; x < p.x + p.width; x++) {
           if(y === p.y || y === p.y + p.height - 1) {
-            cellTypes[y][x] = "room";
+            cellTypes[y][x] = "border";
           } else {
             if(x === p.x || x === p.x + p.width - 1) {
-              cellTypes[y][x] = "room";
+              cellTypes[y][x] = "border";
             }
           }
         }
       }
+
+      p.generateRoom();
+      this.placeRoom(p.room, cellTypes);
     }
 
     return cellTypes;
@@ -194,8 +227,15 @@ class Dungeon extends Component {
 
         count += 1;
     }
-    console.log(partitions);
     return partitions;
+  }
+
+  placeRoom(room, cells) {
+    for(var y = room.y; y < room.y + room.height; y++) {
+      for(var x = room.x; x < room.x + room.width; x++) {
+        cells[y][x] = "room";
+      }
+    }
   }
 
   render () {
