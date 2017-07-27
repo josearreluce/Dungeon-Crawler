@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import Menu from './Menu.js';
+import {Partition} from './Partition.js';
+import {Room} from './Partition.js';
 
 class Cell extends Component {
     render () {
@@ -11,100 +13,10 @@ class Cell extends Component {
     }
 }
 
-class Room {
-    constructor(height, width, x, y) {
-      this.height = height;
-      this.width = width;
-      this.x = x;
-      this.y = y;
-    }
-}
-
-class Partition {
-  constructor(height, width, x ,y) {
-    const MIN_SIZE = 10;
-
-    this.height = height;
-    this.width = width;
-    this.x = x;
-    this.y = y;
-
-    this.lchild = undefined;
-    this.rchild = undefined;
-    this.minSize = MIN_SIZE;
-  }
-
-  chooseDirection(height, width) {
-    var horizontal = Math.random() > 0.5;
-    if(width > height && width > height * 1.25) {
-      horizontal = false;
-    } else if (height > width && height > width * 1.25) {
-      horizontal = true;
-    }
-
-    return horizontal;
-  }
-
-  generateRoom() {
-    var maxX = this.x + this.width - 5;
-    var maxY = this.y + this.height - 5;
-    var x = Math.floor(Math.random() * (maxX - this.x) + this.x);
-    var y = Math.floor(Math.random() * (maxY - this.y) + this.y);
-    var maxHeight = this.height - (y - this.y + 1);
-    var minHeight = 5;
-
-    var maxWidth = this.width - (x - this.x + 1);
-    var minWidth = 5;
-
-    var height = Math.floor(Math.random() * (maxHeight - minHeight) + minHeight);
-    var width = Math.floor(Math.random() * (maxWidth - minWidth) + minWidth);
-    this.room = new Room(height, width, x, y);
-  }
-
-  split() {
-    if(this.lchild || this.rchild) {
-      return false;
-    }
-    var height = this.height;
-    var width = this.width;
-    var x = this.x;
-    var y = this.y;
-
-    var horizontal = this.chooseDirection(height, width);
-
-    var max = horizontal ? height : width;
-    var min = this.minSize;
-    if(max < min) {
-      return false;
-    }
-
-    var splitAt = Math.floor(Math.random() * (max - min) + min);
-
-    if(horizontal) {
-      this.lchild = new Partition(splitAt, width, x, y);
-      this.rchild = new Partition(height - splitAt,
-        width, x, y + splitAt);
-    } else {
-      this.lchild = new Partition(height, splitAt, x, y);
-      this.rchild = new Partition(height, width - splitAt,
-        x + splitAt, y);
-    }
-
-    return true;
-  }
-
-  verifySize() {
-    return this.height >= this.minSize &&
-          this.width >= this.minSize;
-  }
-}
-
 class Dungeon extends Component {
   constructor () {
       super();
 
-      this.cleanPartitions = this.cleanPartitions.bind(this);
-      this.drawPartition = this.drawPartition.bind(this);
       this.generateGrid = this.generateGrid.bind(this);
       this.getHeight = this.getHeight.bind(this);
       this.getWidth = this.getWidth.bind(this);
@@ -125,46 +37,9 @@ class Dungeon extends Component {
   }
 
   componentDidMount() {
-    var partitions = this.partition(12,100,100);
-    partitions = this.cleanPartitions(partitions);
-    var cellTypes = this.drawPartition(partitions);
-    var cells = this.generateGrid(10000, cellTypes);
-  }
-
-  cleanPartitions(partitions) {
-    var leafNodes = [];
-    for(var i = 0; i < partitions.length; i++) {
-      if(!partitions[i].lchild && !partitions[i].rchild) {
-        leafNodes.push(partitions[i]);
-      }
-    }
-
-    return leafNodes;
-  }
-
-  drawPartition(partitions) {
-    //TO DO: remove none leaf nodes
+    var root = this.partition();
     var cellTypes = this.state.cellTypes;
-
-    for(var i = 0; i < partitions.length; i++) {
-      var p = partitions[i];
-      for(var y = p.y; y < p.y + p.height; y++) {
-        for(var x = p.x; x < p.x + p.width; x++) {
-          if(y === p.y || y === p.y + p.height - 1) {
-            cellTypes[y][x] = "border";
-          } else {
-            if(x === p.x || x === p.x + p.width - 1) {
-              cellTypes[y][x] = "border";
-            }
-          }
-        }
-      }
-
-      p.generateRoom();
-      this.placeRoom(p.room, cellTypes);
-    }
-
-    return cellTypes;
+    var cells = this.generateGrid(10000, cellTypes);
   }
 
   generateGrid(size, cellTypes) {
@@ -198,44 +73,10 @@ class Dungeon extends Component {
     return [x,y];
   }
 
-  partition(numRooms, height, width) {
-    var root = new Partition(height, width, 0, 0);
-    var partitions = [];
-    partitions.push(root);
-
-    var count = 0;
-    while(true) {
-      var length = partitions.length;
-      if(length > 100) {
-        break;
-      }
-
-        partitions[count].split();
-        if(partitions[count].lchild &&
-           partitions[count].verifySize()) {
-          partitions.push(partitions[count].lchild);
-        }
-
-        if(partitions[count].rchild &&
-           partitions[count].verifySize()) {
-          partitions.push(partitions[count].rchild)
-        }
-
-        if(partitions.length === length) {
-          break;
-        }
-
-        count += 1;
-    }
-    return partitions;
-  }
-
-  placeRoom(room, cells) {
-    for(var y = room.y; y < room.y + room.height; y++) {
-      for(var x = room.x; x < room.x + room.width; x++) {
-        cells[y][x] = "room";
-      }
-    }
+  partition() {
+    var root = new Partition(100, 100, 0, 0);
+    root.split(4, 0);
+    return root;
   }
 
   render () {
