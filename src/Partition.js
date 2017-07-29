@@ -1,10 +1,38 @@
 class Room {
-    constructor(height, width, x, y) {
-      this.height = height;
-      this.width = width;
-      this.x = x;
-      this.y = y;
+    constructor(p) {
+      this.x = p.x + p.random(1, p.width * 0.3);
+      this.y = p.y + p.random(1, p.height * 0.3);
+      this.height = p.height - (this.x - p.x);
+      this.width = p.width - (this.y - p.y);
     }
+}
+
+class RoomBuilder {
+  buildRoom(p) {
+    return new Room(p);
+  }
+
+  generateRooms(partitions) {
+    for(var i = 0; i < partitions.length; i++) {
+      partitions[i].room = this.buildRoom(partitions[i]);
+    }
+  }
+
+  placeRooms(cells, partitions) {
+    for(var i = 0; i < partitions.length; i++) {
+      var room = partitions[i].room;
+      for(var y = room.y; y < room.y + room.height; y++) {
+        if(y > 99) {
+          break;
+        }
+        for(var x = room.x; x < room.x + room.width; x++) {
+          cells[y][x] = "room";
+        }
+      }
+    }
+
+    return cells;
+  }
 }
 
 class Partition {
@@ -99,5 +127,6 @@ class Partition {
 
 export {
   Partition,
-  Room
+  Room,
+  RoomBuilder
 };
