@@ -2,8 +2,8 @@ class Room {
     constructor(p) {
       this.x = p.x + p.random(1, p.width * 0.3);
       this.y = p.y + p.random(1, p.height * 0.3);
-      this.height = p.height - (this.x - p.x);
-      this.width = p.width - (this.y - p.y);
+      this.height = p.height - (this.y - p.y);
+      this.width = p.width - (this.x - p.x);
     }
 }
 
