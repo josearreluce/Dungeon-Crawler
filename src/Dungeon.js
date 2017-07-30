@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Menu from './Menu.js';
+import Player from './Player.js';
 import {Partition} from './Partition.js';
 import {Room} from './Partition.js';
 import {RoomBuilder} from './Partition.js';
@@ -23,7 +24,6 @@ class Dungeon extends Component {
       this.getWidth = this.getWidth.bind(this);
       this.getRandomPoint = this.getRandomPoint.bind(this);
       this.partition = this.partition.bind(this);
-      this.placePartitions = this.placePartitions.bind(this);
 
       var cellTypes = [];
       for(var i = 0; i < 100; i++) {
@@ -42,10 +42,11 @@ class Dungeon extends Component {
     var root = this.partition();
     var leafNodes = root.getLeafNodes(root);
     var roomConstructor = new RoomBuilder;
-    var cellTypes = this.placePartitions(leafNodes);
     roomConstructor.generateRooms(leafNodes);
-    var cellTypes = roomConstructor.placeRooms(cellTypes, leafNodes);
-    var cellTypes = root.connectPartitions(cellTypes, root);
+    var cellTypes = roomConstructor.placeRooms(this.state.cellTypes, leafNodes);
+    cellTypes = root.connectPartitions(cellTypes, root);
+    var player = new Player;
+    cellTypes = player.placePlayer(cellTypes, leafNodes);
     var cells = this.generateGrid(10000, cellTypes);
   }
 
@@ -84,22 +85,6 @@ class Dungeon extends Component {
     var root = new Partition(100, 100, 0, 0);
     root.split(5, 0);
     return root;
-  }
-
-  placePartitions(partition) {
-    var cells = this.state.cellTypes;
-    for(var i = 0; i < partition.length; i++) {
-      var currP = partition[i];
-      for(var y = currP.y; y < currP.y + currP.height; y++) {
-        for(var x = currP.x; x < currP.x + currP.width; x++) {
-          if(x === currP.x || y === currP.y || x === currP.x + currP.width ||
-              y === currP.y + currP.height) {
-                cells[y][x] = "border";
-              }
-        }
-      }
-    }
-    return cells;
   }
 
   render () {
