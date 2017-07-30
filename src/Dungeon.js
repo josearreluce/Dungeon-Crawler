@@ -45,6 +45,7 @@ class Dungeon extends Component {
     var cellTypes = this.placePartitions(leafNodes);
     roomConstructor.generateRooms(leafNodes);
     var cellTypes = roomConstructor.placeRooms(cellTypes, leafNodes);
+    var cellTypes = root.connectPartitions(cellTypes, root);
     var cells = this.generateGrid(10000, cellTypes);
   }
 

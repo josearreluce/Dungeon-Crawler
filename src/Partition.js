@@ -44,6 +44,11 @@ class Partition {
     this.x = x;
     this.y = y;
 
+    this.center = {
+        x: Math.floor(this.x + (this.width / 2)),
+        y: Math.floor(this.y + (this.height / 2))
+    };
+
     this.lchild = undefined;
     this.rchild = undefined;
     this.minSize = MIN_SIZE;
@@ -58,6 +63,26 @@ class Partition {
     }
 
     return horizontal;
+  }
+
+  connectPartitions(cellTypes, node) {
+    if(node === undefined) {
+      return cellTypes;
+    }
+
+    if(node.lchild === undefined && node.rchild === undefined) {
+      return cellTypes;
+    }
+
+    for(var y = node.lchild.center.y; y <= node.rchild.center.y; y++) {
+      for(var x = node.lchild.center.x; x <= node.rchild.center.x; x++) {
+        cellTypes[y][x] = "room";
+      }
+    }
+
+    cellTypes = this.connectPartitions(cellTypes, node.lchild);
+    cellTypes = this.connectPartitions(cellTypes, node.rchild);
+    return cellTypes;
   }
 
   getLeafNodes(node) {
