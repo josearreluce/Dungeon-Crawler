@@ -8,7 +8,6 @@ table {
 }
 
 .cell {
-  border: 1px solid black;
   height: 10px;
   width: 10px;
 }
@@ -27,5 +26,5 @@ table {
 }
 
 .player {
-  background-color: red;
+  background-color: blue;
 }

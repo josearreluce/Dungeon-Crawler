@@ -4,6 +4,7 @@ class Player extends Component {
   constructor () {
     super();
     this.placePlayer = this.placePlayer.bind(this);
+    this.withinView = this.withinView.bind(this);
   }
 
   placePlayer(cells, partitions) {
@@ -16,6 +17,22 @@ class Player extends Component {
 
     cells[center.y][center.x] = "player";
     return cells;
+  }
+
+  withinView(cellX, cellY, cellTypes) {
+    var maxY = cellY < 95 ? 5 : (100 - cellY);
+    var minY = cellY > 4 ? cellY - 5 : 0;
+    for(var y = minY; y < cellY + maxY; y++) {
+      var maxX = cellX < 95 ? 5 : (100 - cellX);
+      var minX = cellX > 4 ? cellX - 5 : 0;
+      for(var x = minX; x < cellX + maxX; x++) {
+        if(cellTypes[y][x] === "player") {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }
 

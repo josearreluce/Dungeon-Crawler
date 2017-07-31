@@ -47,15 +47,20 @@ class Dungeon extends Component {
     cellTypes = root.connectPartitions(cellTypes, root);
     var player = new Player;
     cellTypes = player.placePlayer(cellTypes, leafNodes);
-    var cells = this.generateGrid(10000, cellTypes);
+    var cells = this.generateGrid(10000, cellTypes, player);
   }
 
-  generateGrid(size, cellTypes) {
+  generateGrid(size, cellTypes, player) {
     var cells = [];
     for(var y = 0; y < this.state.height; y++) {
       var row = [];
       for(var x = 0; x < this.state.width; x++) {
-        var styles = {opacity: 1};
+        var cellOpacity = 0;
+        if(player.withinView(x, y, cellTypes)) {
+          cellOpacity = 1;
+        }
+        
+        var styles = {opacity: cellOpacity};
         row.push(<Cell key={x} x={x} y={y} type={cellTypes[y][x]} styles={styles} />);
       }
       cells.push(<tr key={y}>{row}</tr>);
