@@ -34,6 +34,7 @@ class Dungeon extends Component {
         cellTypes: cellTypes,
         cells: [],
         height: 100,
+        player: undefined,
         width: 100
       };
   }
@@ -46,11 +47,13 @@ class Dungeon extends Component {
     var cellTypes = roomConstructor.placeRooms(this.state.cellTypes, leafNodes);
     cellTypes = root.connectPartitions(cellTypes, root);
     var player = new Player;
-    cellTypes = player.placePlayer(cellTypes, leafNodes);
-    var cells = this.generateGrid(10000, cellTypes, player);
+    var player_position = player.placePlayer(cellTypes, leafNodes);
+    console.log(player_position);
+    var cells = this.generateGrid(cellTypes, player, player_position);
   }
 
-  generateGrid(size, cellTypes, player) {
+  generateGrid(cellTypes, player, player_position) {
+    console.log("Generating a grid.");
     var cells = [];
     for(var y = 0; y < this.state.height; y++) {
       var row = [];
@@ -59,7 +62,7 @@ class Dungeon extends Component {
         if(player.withinView(x, y, cellTypes)) {
           cellOpacity = 1;
         }
-        
+
         var styles = {opacity: cellOpacity};
         row.push(<Cell key={x} x={x} y={y} type={cellTypes[y][x]} styles={styles} />);
       }
@@ -68,7 +71,8 @@ class Dungeon extends Component {
 
     this.setState({
       cells: cells,
-      cellTypes: cellTypes
+      cellTypes: cellTypes,
+      player: player_position,
     });
   }
 
@@ -86,6 +90,69 @@ class Dungeon extends Component {
     return [x,y];
   }
 
+  handleKeyDown(e) {
+    e.preventDefault();
+    var player = this.state.player;
+    var cellTypes = this.state.cellTypes;
+
+    var key = e.which;
+    if(key === 37) {
+      if(player.x <= 0) {
+        return;
+      }
+
+      if(cellTypes[player.y][player.x - 1] === "wall") {
+        return;
+      }
+
+      cellTypes[player.y][player.x] = "room";
+      cellTypes[player.y][player.x - 1] = "player";
+      this.generateGrid(cellTypes, new Player, {x: player.x - 1, y: player.y});
+    }
+
+    if(key === 38) {
+      if(player.y <= 0) {
+        return;
+      }
+
+      if(cellTypes[player.y - 1][player.x] === "wall") {
+        return;
+      }
+
+      cellTypes[player.y][player.x] = "room";
+      cellTypes[player.y - 1][player.x] = "player";
+      this.generateGrid(cellTypes, new Player, {x: player.x, y: player.y - 1});
+    }
+
+    if(key === 39) {
+      if(player.x >= 99) {
+        return;
+      }
+
+      if(cellTypes[player.y][player.x + 1] === "wall") {
+        return;
+      }
+
+      cellTypes[player.y][player.x] = "room";
+      cellTypes[player.y][player.x + 1] = "player";
+      this.generateGrid(cellTypes, new Player, {x: player.x + 1, y: player.y});
+    }
+
+    if(key === 40) {
+      if(player.y >= 99) {
+        return;
+      }
+
+      if(cellTypes[player.y + 1][player.x] === "wall") {
+        return;
+      }
+
+      cellTypes[player.y][player.x] = "room";
+      cellTypes[player.y + 1][player.x] = "player";
+      this.generateGrid(cellTypes, new Player, {x: player.x, y: player.y + 1});
+    }
+  }
+
   partition() {
     var root = new Partition(100, 100, 0, 0);
     root.split(5, 0);
@@ -94,11 +161,17 @@ class Dungeon extends Component {
 
   render () {
     return (
-      <div id="dungeon">
+      <div tabIndex="0" id="dungeon" onKeyDown={(event) => this.handleKeyDown(event)}>
         <div id="notice">
           <h2> ReactJS Roguelike Dungeon Crawler </h2>
           <p> This is a work in progress. </p>
-          <Menu />
+          <Menu
+            health="100"
+            weapon="stick"
+            attack="7"
+            level="0"
+            next="60 XP"
+            dungeon="0" />
         </div>
         <table>
           <tbody>

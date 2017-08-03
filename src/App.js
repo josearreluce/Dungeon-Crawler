@@ -7,7 +7,7 @@ import Menu from './Menu.js';
 class App extends Component {
   render() {
     return (
-      <div className="App">
+      <div tabIndex="0" className="App">
         <Dungeon />
       </div>
     );

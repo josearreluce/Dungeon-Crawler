@@ -16,16 +16,16 @@ class Player extends Component {
     };
 
     cells[center.y][center.x] = "player";
-    return cells;
+    return {x: center.x, y: center.y};
   }
 
   withinView(cellX, cellY, cellTypes) {
-    var maxY = cellY < 95 ? 5 : (100 - cellY);
-    var minY = cellY > 4 ? cellY - 5 : 0;
-    for(var y = minY; y < cellY + maxY; y++) {
-      var maxX = cellX < 95 ? 5 : (100 - cellX);
-      var minX = cellX > 4 ? cellX - 5 : 0;
-      for(var x = minX; x < cellX + maxX; x++) {
+    var minY = cellY < 6 ? 0 : cellY - 6;
+    var maxY = cellY > 93 ? 99 : cellY + 6;
+    for(var y = minY; y <= maxY; y++) {
+      var minX = cellX < 6 ? 0 : cellX - 6;
+      var maxX = cellX > 93 ? 99 : cellX + 6;
+      for(var x = minX; x <= maxX; x++) {
         if(cellTypes[y][x] === "player") {
           return true;
         }
